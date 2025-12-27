@@ -53,7 +53,7 @@ namespace Game_7D2D.Modules
         private readonly Dictionary<int, Vector2> _screenPositionCache = new Dictionary<int, Vector2>();
         private readonly Dictionary<int, float> _distanceCache = new Dictionary<int, float>();
         private float _cacheUpdateTime = 0f;
-        private const float CACHE_UPDATE_INTERVAL = 0.1f; // Update cache every 100ms
+        private const float CACHE_UPDATE_INTERVAL = Config.CACHE_UPDATE_INTERVAL; // Update cache every 100ms
         
         // Render settings
         private bool _renderBoxes = true;

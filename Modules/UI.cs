@@ -34,13 +34,13 @@ namespace Game_7D2D.Modules
         public static bool t_TFOV = false;
         
         // Aim tuning
-        public static int t_AimFOV = 150;
-        public static float t_AimSmooth = 5f;
+        public static int t_AimFOV = Config.DEFAULT_AIM_FOV;
+        public static float t_AimSmooth = Config.DEFAULT_AIM_SMOOTH;
         public static bool t_DebugOverlay = true;
 
         // FOV-Aware ESP Settings
         public static bool t_FOVAwareESP = true;
-        public static float t_FOVThreshold = 120f;
+        public static float t_FOVThreshold = Config.DEFAULT_FOV_THRESHOLD;
         
         // Legacy compatibility
         public static string dbg = "debug";
@@ -54,22 +54,22 @@ namespace Game_7D2D.Modules
         private static GUIStyle boxStyle;
         
         // Layout Constants
-        private const float WINDOW_WIDTH = 300f;
-        private const float WINDOW_HEIGHT = 400f;
-        private const float PADDING = 10f;
-        private const float BUTTON_HEIGHT = 25f;
-        private const float SPACING = 5f;
+        private const float WINDOW_WIDTH = Config.WINDOW_WIDTH;
+        private const float WINDOW_HEIGHT = Config.WINDOW_HEIGHT;
+        private const float PADDING = Config.PADDING;
+        private const float BUTTON_HEIGHT = Config.BUTTON_HEIGHT;
+        private const float SPACING = Config.SPACING;
         
         // Colors
-        private static Color primaryColor = new Color(0.1f, 0.1f, 0.1f, 0.9f);
-        private static Color accentColor = new Color(0.2f, 0.4f, 0.8f, 0.9f);
-        private static Color textColor = Color.white;
-        private static Color disabledColor = Color.gray;
+        private static Color primaryColor = Config.PrimaryColor;
+        private static Color accentColor = Config.AccentColor;
+        private static Color textColor = Config.TextColor;
+        private static Color disabledColor = Config.DisabledColor;
         
         // Animation and Interpolation
         private static float menuAlpha = 0f;
         private static bool menuVisible = false;
-        private const float FADE_SPEED = 5f;
+        private const float FADE_SPEED = Config.FADE_SPEED;
 
         /// <summary>
         /// Initialize UI styles and colors for modern appearance.
@@ -82,7 +82,7 @@ namespace Game_7D2D.Modules
             windowStyle = new GUIStyle(GUI.skin.window)
             {
                 normal = { background = CreateColorTexture(primaryColor) },
-                fontSize = 12,
+                fontSize = Config.WINDOW_FONT_SIZE,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.UpperLeft
             };
@@ -93,7 +93,7 @@ namespace Game_7D2D.Modules
                 normal = { textColor = textColor },
                 hover = { textColor = Color.white },
                 active = { textColor = accentColor },
-                fontSize = 11,
+                fontSize = Config.BUTTON_FONT_SIZE,
                 fontStyle = FontStyle.Bold
             };
             
@@ -101,7 +101,7 @@ namespace Game_7D2D.Modules
             labelStyle = new GUIStyle(GUI.skin.label)
             {
                 normal = { textColor = textColor },
-                fontSize = 11,
+                fontSize = Config.LABEL_FONT_SIZE,
                 fontStyle = FontStyle.Normal,
                 alignment = TextAnchor.UpperLeft
             };
@@ -110,14 +110,14 @@ namespace Game_7D2D.Modules
             toggleStyle = new GUIStyle(GUI.skin.toggle)
             {
                 normal = { textColor = textColor },
-                fontSize = 10,
+                fontSize = Config.TOGGLE_FONT_SIZE,
                 fontStyle = FontStyle.Normal
             };
             
             // Box Style
             boxStyle = new GUIStyle(GUI.skin.box)
             {
-                normal = { background = CreateColorTexture(new Color(0.05f, 0.05f, 0.05f, 0.8f)) }
+                normal = { background = CreateColorTexture(Config.BoxBackgroundColor) }
             };
         }
         
@@ -126,7 +126,7 @@ namespace Game_7D2D.Modules
         /// </summary>
         private static Texture2D CreateColorTexture(Color color)
         {
-            Texture2D texture = new Texture2D(1, 1);
+            Texture2D texture = new Texture2D(Config.TEXTURE_SIZE, Config.TEXTURE_SIZE);
             texture.SetPixel(0, 0, color);
             texture.Apply();
             return texture;
@@ -153,23 +153,23 @@ namespace Game_7D2D.Modules
             
             // Smooth fade in/out
             if (menuVisible && menuAlpha < 1f)
-                menuAlpha = Mathf.Min(1f, menuAlpha + Time.deltaTime * FADE_SPEED);
+                menuAlpha = Mathf.Min(1f, menuAlpha + Time.deltaTime * Config.FADE_SPEED);
             else if (!menuVisible && menuAlpha > 0f)
-                menuAlpha = Mathf.Max(0f, menuAlpha - Time.deltaTime * FADE_SPEED);
+                menuAlpha = Mathf.Max(0f, menuAlpha - Time.deltaTime * Config.FADE_SPEED);
             
             if (menuAlpha <= 0f) return;
             
             GUI.color = new Color(1f, 1f, 1f, menuAlpha);
             
             // Main Menu Window
-            GUILayout.BeginArea(new Rect(PADDING, PADDING, WINDOW_WIDTH, WINDOW_HEIGHT), windowStyle);
+            GUILayout.BeginArea(new Rect(Config.PADDING, Config.PADDING, Config.WINDOW_WIDTH, Config.WINDOW_HEIGHT), windowStyle);
             DrawMainMenu();
             GUILayout.EndArea();
             
             // ESP Submenu
             if (t_ESP)
             {
-                GUILayout.BeginArea(new Rect(WINDOW_WIDTH + PADDING * 2, PADDING, 250f, 300f), windowStyle);
+                GUILayout.BeginArea(new Rect(Config.WINDOW_WIDTH + Config.PADDING * 2, Config.PADDING, Config.SUBMENU_WIDTH, Config.ESP_SUBMENU_HEIGHT), windowStyle);
                 DrawESPMenu();
                 GUILayout.EndArea();
             }
@@ -177,7 +177,7 @@ namespace Game_7D2D.Modules
             // Aimbot Submenu
             if (t_AIM)
             {
-                GUILayout.BeginArea(new Rect(WINDOW_WIDTH + PADDING * 2, PADDING, 250f, 350f), windowStyle);
+                GUILayout.BeginArea(new Rect(Config.WINDOW_WIDTH + Config.PADDING * 2, Config.PADDING, Config.SUBMENU_WIDTH, Config.AIMBOT_SUBMENU_HEIGHT), windowStyle);
                 DrawAimbotMenu();
                 GUILayout.EndArea();
             }

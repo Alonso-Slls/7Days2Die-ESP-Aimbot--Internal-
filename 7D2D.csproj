@@ -307,6 +307,7 @@
     <Compile Include="Modules\EntityTracker.cs" />
     <Compile Include="Modules\ErrorHandler.cs" />
     <Compile Include="Modules\ESP.cs" />
+    <Compile Include="Modules\HacksManager.cs" />
     <Compile Include="Modules\Hotkeys.cs" />
     <Compile Include="Modules\SpatialGrid.cs" />
     <Compile Include="Modules\UI.cs" />

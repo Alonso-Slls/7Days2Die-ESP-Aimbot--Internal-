@@ -180,7 +180,7 @@ namespace Game_7D2D.Modules
 
         public static bool IsOnScreen(Vector3 position)
         {
-            return position.y > 0.01f && position.y < Screen.height - 5f && position.z > 0.01f;
+            return position.y > Config.MIN_SCREEN_POSITION && position.y < Screen.height - Config.SCREEN_EDGE_MARGIN && position.z > Config.MIN_SCREEN_POSITION;
         }
 
     }

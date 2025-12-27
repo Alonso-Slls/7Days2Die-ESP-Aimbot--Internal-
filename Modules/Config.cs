@@ -35,6 +35,50 @@ namespace Game_7D2D.Modules
         public const float BUTTON_HEIGHT = 25f;
         public const float SPACING = 5f;
         
+        // Rendering constants
+        public const float FADE_SPEED = 5f;
+        public const float CACHE_UPDATE_INTERVAL = 0.1f;
+        public const float THICKNESS_TOLERANCE = 0.01f;
+        public const float MIN_SCREEN_POSITION = 0.01f;
+        public const int SCREEN_EDGE_MARGIN = 5;
+        public const float DEFAULT_CELL_SIZE = 50f;
+        public const float DEFAULT_MAX_DISTANCE = 200f;
+        public const float DEFAULT_VISIBILITY_DISTANCE = 100f;
+        public const float COROUTINE_UPDATE_INTERVAL = 0.25f;
+        public const float FIRE_COOLDOWN = 0.15f;
+        public const float WEAPON_CHECK_INTERVAL = 0.25f;
+        
+        // Color constants
+        public static readonly Color PrimaryColor = new Color(0.1f, 0.1f, 0.1f, 0.9f);
+        public static readonly Color AccentColor = new Color(0.2f, 0.4f, 0.8f, 0.9f);
+        public static readonly Color BoxBackgroundColor = new Color(0.05f, 0.05f, 0.05f, 0.8f);
+        public static readonly Color TextColor = Color.white;
+        public static readonly Color DisabledColor = Color.gray;
+        
+        // Font constants
+        public const int WINDOW_FONT_SIZE = 12;
+        public const int BUTTON_FONT_SIZE = 11;
+        public const int LABEL_FONT_SIZE = 11;
+        public const int TOGGLE_FONT_SIZE = 10;
+        
+        // Slider ranges
+        public const int MIN_AIM_FOV = 50;
+        public const int MAX_AIM_FOV = 400;
+        public const float MIN_AIM_SMOOTH = 1f;
+        public const float MAX_AIM_SMOOTH = 20f;
+        public const float MIN_FOV_THRESHOLD = 60f;
+        public const float MAX_FOV_THRESHOLD = 180f;
+        
+        // Debug overlay constants
+        public const float DEBUG_OVERLAY_WIDTH = 200f;
+        public const float DEBUG_OVERLAY_HEIGHT = 100f;
+        public const float SUBMENU_WIDTH = 250f;
+        public const float ESP_SUBMENU_HEIGHT = 300f;
+        public const float AIMBOT_SUBMENU_HEIGHT = 350f;
+        
+        // Texture constants
+        public const int TEXTURE_SIZE = 1;
+        
         /// <summary>
         /// Initialize configuration system and load settings.
         /// </summary>

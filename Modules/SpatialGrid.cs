@@ -14,7 +14,7 @@ namespace Game_7D2D.Modules
     public static class SpatialGrid
     {
         // Grid configuration
-        private static float cellSize = 50f; // 50 meter grid cells
+        private static float cellSize = Config.DEFAULT_CELL_SIZE; // 50 meter grid cells
         private static Dictionary<Vector2Int, List<Entity>> grid = new Dictionary<Vector2Int, List<Entity>>();
         private static List<Entity> nearbyEntities = new List<Entity>();
         
@@ -130,7 +130,7 @@ namespace Game_7D2D.Modules
         /// <summary>
         /// Get all entities within the player's vicinity (optimized for ESP).
         /// </summary>
-        public static List<Entity> GetNearbyEntities(Vector3 playerPosition, float maxDistance = 200f)
+        public static List<Entity> GetNearbyEntities(Vector3 playerPosition, float maxDistance = Config.DEFAULT_MAX_DISTANCE)
         {
             return GetEntitiesInRange(playerPosition, maxDistance);
         }
@@ -209,7 +209,7 @@ namespace Game_7D2D.Modules
         /// <summary>
         /// Check if an entity is visible from a position (simple line of sight check).
         /// </summary>
-        public static bool IsVisibleFrom(this Entity entity, Vector3 observerPosition, float maxDistance = 100f)
+        public static bool IsVisibleFrom(this Entity entity, Vector3 observerPosition, float maxDistance = Config.DEFAULT_VISIBILITY_DISTANCE)
         {
             if (entity == null) return false;
             

@@ -297,7 +297,7 @@ namespace Game_7D2D.Modules
                 _lastColor = color;
             }
             
-            if (Math.Abs(thickness - _lastThickness) > 0.01f)
+            if (Math.Abs(thickness - _lastThickness) > Config.THICKNESS_TOLERANCE)
             {
                 _lastThickness = thickness;
             }

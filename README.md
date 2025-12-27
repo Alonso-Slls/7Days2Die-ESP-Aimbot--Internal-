@@ -31,7 +31,22 @@ This is a comprehensive C# mod for 7 Days to Die featuring advanced ESP, aimbot,
 ## Performance Architecture
 
 ### Enterprise-Grade Optimizations
+- **Singleton Pattern**: Thread-safe HacksManager with instance-based architecture
 - **Entity Subscription Model**: O(1) entity updates vs O(n) scans
+- **Batched Rendering**: Groups draw calls to minimize GPU state changes
+- **Memory Management**: Object pooling and efficient caching
+- **Thread-Safe Operations**: Concurrent entity tracking with proper synchronization
+- **Resource Cleanup**: IDisposable pattern for proper memory management
+
+### New Architecture Features (v2.1)
+- **Instance-Based Design**: Eliminated static state for better memory management
+- **Modular Components**: Separated concerns with dedicated classes
+  - `HacksManager`: Main singleton coordinator
+  - `EntityTracker<T>`: Generic entity management
+  - `ESPRenderer`: Dedicated rendering system
+  - `Config`: JSON-based settings persistence
+- **Named Constants**: Replaced magic numbers with configurable constants
+- **Backward Compatibility**: Legacy Hacks class maintained during transition
 - **Batched Rendering**: Groups draw calls to minimize GPU state changes
 - **Memory Management**: Object pooling and efficient caching
 - **Thread-Safe Operations**: Concurrent entity tracking with proper synchronization
@@ -212,6 +227,14 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 
 ## Version History
 
+### v2.1 - Instance-Based Architecture Refactor
+- **Major Refactor**: Eliminated static state from Hacks class
+- **HacksManager**: New singleton pattern with instance-based architecture
+- **Config Enhancement**: Added comprehensive named constants for all magic numbers
+- **Backward Compatibility**: Legacy Hacks class maintained with deprecation warnings
+- **Code Quality**: Improved separation of concerns and maintainability
+- **Performance**: Better memory management with instance-based design
+
 ### v2.0 - Enterprise Architecture
 - Implemented singleton pattern managers
 - Added generic EntityTracker<T> system
@@ -271,6 +294,6 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 ---
 
 **Last Updated**: December 2024  
-**Version**: 2.0 - Enterprise Architecture  
+**Version**: 2.1 - Instance-Based Architecture  
 **Compatibility**: 7 Days to Die Latest Version
 
