@@ -298,9 +298,11 @@
     <Compile Include="Class1.cs" />
     <Compile Include="Hacks.cs" />
     <Compile Include="Modules\Aimbot.cs" />
+    <Compile Include="Modules\BatchedRenderer.cs" />
     <Compile Include="Modules\Config.cs" />
     <Compile Include="Modules\ESPPool.cs" />
     <Compile Include="Modules\EntityManager.cs" />
+    <Compile Include="Modules\EntitySubscription.cs" />
     <Compile Include="Modules\ErrorHandler.cs" />
     <Compile Include="Modules\ESP.cs" />
     <Compile Include="Modules\Hotkeys.cs" />

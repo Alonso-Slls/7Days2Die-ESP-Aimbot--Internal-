@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Diagnostics;
 using System.Linq;
-using Unity.Collections;
-using Unity.Jobs; 
-using System.Diagnostics; 
+using System.Threading;
+using UnityEngine;
+using Game_7D2D.Modules; 
 
 namespace Game_7D2D
 {
@@ -64,9 +62,27 @@ namespace Game_7D2D
 
         public void Start()
         {
+            // Initialize all systems
+            ErrorHandler.Initialize();
+            Config.Initialize();
+            EntitySubscription.Initialize();
+            BatchedRenderer.Initialize();
+            
+            // Create EntityManager component
+            if (EntityManager.Instance == null)
+            {
+                var entityManagerGO = new GameObject("EntityManager");
+                entityManagerGO.AddComponent<EntityManager>();
+            }
+            
+            // Start entity tracking
+            EntitySubscription.RescanAndSubscribeExistingEntities();
+            
             coro = StartCoroutine(updateObjects());
             MainCamera = Camera.main;
             Modules.UI.dbg = "loaded";
+            
+            ErrorHandler.LogInfo("Hacks", "All systems initialized successfully");
         }
         
         public void stopCoro()
@@ -89,14 +105,22 @@ namespace Game_7D2D
                 Timer += Time.deltaTime; 
 
                 // Performance Optimization: Only update entities when ESP features are active
-                bool espFeaturesActive = Modules.UI.t_EnemyESP || Modules.UI.t_PlayerESP || 
-                                       Modules.UI.t_ItemESP || Modules.UI.t_AnimalESP || 
-                                       Modules.UI.t_NPCESP || Modules.UI.t_AIM;
+                bool espFeaturesActive = Config.Settings.EnemyESP || Config.Settings.PlayerESP || 
+                                       Config.Settings.ItemESP || Config.Settings.AnimalESP || 
+                                       Config.Settings.NPCESP || Config.Settings.AimbotEnabled;
                 
-                if (Timer >= 5f && espFeaturesActive)
+                // Use subscription model instead of periodic scans
+                if (Timer >= Config.ENTITY_SCAN_INTERVAL && espFeaturesActive)
                 {
                     Timer = 0f;
-                    // Entity updates are now handled by the optimized updateObjects coroutine
+                    // Cleanup invalid entities periodically
+                    EntitySubscription.CleanupInvalidEntities();
+                    
+                    // Rescan for any missed entities (fallback)
+                    if (UnityEngine.Random.Range(0, 10) == 0) // 10% chance per interval
+                    {
+                        EntitySubscription.RescanAndSubscribeExistingEntities();
+                    }
                 }
 
                 if (Input.GetKeyDown(KeyCode.Keypad1))
@@ -108,6 +132,84 @@ namespace Game_7D2D
             }
             
             checkState();
+        }
+
+        /// <summary>
+        /// Render ESP using the subscription model for better performance.
+        /// </summary>
+        private void RenderESPWithSubscription()
+        {
+            try
+            {
+                // Render Enemy ESP
+                if (Config.Settings.EnemyESP)
+                {
+                    var enemies = EntitySubscription.GetSubscribedEntities<EntityEnemy>();
+                    foreach (var enemy in enemies)
+                    {
+                        if (enemy != null && enemy.IsAlive())
+                        {
+                            Modules.ESP.esp_drawBox(enemy, Config.Settings.EnemyColor);
+                        }
+                    }
+                }
+
+                // Render Item ESP
+                if (Config.Settings.ItemESP)
+                {
+                    var items = EntitySubscription.GetSubscribedEntities<EntityItem>();
+                    foreach (var item in items)
+                    {
+                        if (item != null)
+                        {
+                            Modules.ESP.esp_drawBox(item, Config.Settings.ItemColor);
+                        }
+                    }
+                }
+
+                // Render NPC ESP
+                if (Config.Settings.NPCESP)
+                {
+                    var npcs = EntitySubscription.GetSubscribedEntities<EntityNPC>();
+                    foreach (var npc in npcs)
+                    {
+                        if (npc != null && npc.IsAlive() && npc.IsSpawned())
+                        {
+                            Modules.ESP.esp_drawBox(npc, Config.Settings.NPCColor);
+                        }
+                    }
+                }
+
+                // Render Player ESP
+                if (Config.Settings.PlayerESP)
+                {
+                    var players = EntitySubscription.GetSubscribedEntities<EntityPlayer>();
+                    foreach (var player in players)
+                    {
+                        if (player != null && player.IsAlive() && player.IsSpawned())
+                        {
+                            Modules.ESP.esp_drawBox(player, Config.Settings.PlayerColor);
+                        }
+                    }
+                }
+
+                // Render Animal ESP
+                if (Config.Settings.AnimalESP)
+                {
+                    var animals = EntitySubscription.GetSubscribedEntities<EntityAnimal>();
+                    foreach (var animal in animals)
+                    {
+                        if (animal != null && animal.IsAlive())
+                        {
+                            Modules.ESP.esp_drawBox(animal, Config.Settings.AnimalColor);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ErrorHandler.LogError("Hacks.RenderESPWithSubscription", $"ESP rendering error: {ex.Message}");
+            }
         }
 
         public void OnGUI()
