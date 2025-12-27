@@ -204,41 +204,47 @@ namespace Game_7D2D.Modules
         #region Initialization
         
         /// <summary>
-        /// Initializes all mod systems.
+        /// Initialize the mod and all systems.
         /// </summary>
-        private void Initialize()
+        private void Start()
         {
             try
             {
-                ErrorHandler.LogInfo("HacksManager", "Initializing mod systems...");
+                // Initialize detailed logging first
+                DetailedLogger.Initialize();
+                DetailedLogger.Log(DetailedLogger.LogLevel.INFO, "HacksManager", "Starting mod initialization");
                 
-                // Initialize core systems
-                ErrorHandler.Initialize();
+                // Initialize configuration
                 Config.Initialize();
-                EntitySubscription.Initialize();
-                BatchedRenderer.Initialize();
+                DetailedLogger.LogComponentInit("Config", true);
+                
+                // Initialize error handler
+                ErrorHandler.Initialize();
+                DetailedLogger.LogComponentInit("ErrorHandler", true);
+                
+                // Initialize UI
+                UI.Initialize();
+                DetailedLogger.LogComponentInit("UI", true);
                 
                 // Initialize entity trackers
                 InitializeEntityTrackers();
                 
-                // Create EntityManager component
-                CreateEntityManager();
+                // Initialize renderers
+                InitializeRenderers();
                 
-                // Start entity tracking
-                EntitySubscription.RescanAndSubscribeExistingEntities();
+                // Start main update coroutine
+                StartCoroutine(MainUpdateCoroutine());
                 
-                // Start update coroutine
-                _updateCoroutine = StartCoroutine(UpdateObjectsCoroutine());
+                _isLoaded = true;
+                DetailedLogger.Log(DetailedLogger.LogLevel.INFO, "HacksManager", "Mod initialization completed successfully");
                 
-                // Set initial state
-                _mainCamera = Camera.main;
-                CheckGameState();
-                
-                ErrorHandler.LogInfo("HacksManager", "All systems initialized successfully");
+                // Log system information
+                DetailedLogger.Log(DetailedLogger.LogLevel.DEBUG, "HacksManager", DetailedLogger.GetSystemInfo());
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                ErrorHandler.LogError("HacksManager", $"Initialization failed: {ex.Message}");
+                DetailedLogger.Log(DetailedLogger.LogLevel.CRITICAL, "HacksManager", $"Initialization failed: {ex.Message}", ex.StackTrace);
+                ErrorHandler.LogError("HacksManager", $"Initialization failed: {ex.Message}", ex);
             }
         }
         
@@ -252,6 +258,24 @@ namespace Game_7D2D.Modules
             EntityTracker<EntityPlayer>.Instance.ScanInterval = Config.ENTITY_SCAN_INTERVAL;
             EntityTracker<EntityItem>.Instance.ScanInterval = Config.ENTITY_SCAN_INTERVAL;
             EntityTracker<EntityNPC>.Instance.ScanInterval = Config.ENTITY_SCAN_INTERVAL;
+            
+            DetailedLogger.Log(DetailedLogger.LogLevel.INFO, "HacksManager", "Entity trackers initialized");
+        }
+        
+        /// <summary>
+        /// Initializes rendering systems.
+        /// </summary>
+        private void InitializeRenderers()
+        {
+            // Initialize ESP renderer
+            ESPRenderer.Instance.Initialize();
+            DetailedLogger.LogComponentInit("ESPRenderer", true);
+            
+            // Initialize batched renderer
+            BatchedRenderer.Initialize();
+            DetailedLogger.LogComponentInit("BatchedRenderer", true);
+            
+            DetailedLogger.Log(DetailedLogger.LogLevel.INFO, "HacksManager", "Rendering systems initialized");
         }
         
         /// <summary>
@@ -541,17 +565,29 @@ namespace Game_7D2D.Modules
         /// </summary>
         private void Cleanup()
         {
-            StopUpdateCoroutine();
-            
-            // Dispose all singleton instances
-            ESPRenderer.Instance?.Dispose();
-            EntityTracker<EntityEnemy>.Instance?.Dispose();
-            EntityTracker<EntityAnimal>.Instance?.Dispose();
-            EntityTracker<EntityPlayer>.Instance?.Dispose();
-            EntityTracker<EntityItem>.Instance?.Dispose();
-            EntityTracker<EntityNPC>.Instance?.Dispose();
-            
-            ErrorHandler.LogInfo("HacksManager", "Cleanup completed");
+            try
+            {
+                DetailedLogger.Log(DetailedLogger.LogLevel.INFO, "HacksManager", "Starting cleanup process");
+                
+                StopUpdateCoroutine();
+                
+                // Dispose all singleton instances
+                ESPRenderer.Instance?.Dispose();
+                EntityTracker<EntityEnemy>.Instance?.Dispose();
+                EntityTracker<EntityAnimal>.Instance?.Dispose();
+                EntityTracker<EntityPlayer>.Instance?.Dispose();
+                EntityTracker<EntityItem>.Instance?.Dispose();
+                EntityTracker<EntityNPC>.Instance?.Dispose();
+                
+                // Cleanup detailed logger last
+                DetailedLogger.Cleanup();
+                
+                ErrorHandler.LogInfo("HacksManager", "Cleanup completed");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[HacksManager] Cleanup failed: {ex.Message}");
+            }
         }
         
         #endregion

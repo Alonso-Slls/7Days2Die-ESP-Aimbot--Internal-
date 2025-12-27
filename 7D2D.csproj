@@ -300,6 +300,7 @@
     <Compile Include="Modules\Aimbot.cs" />
     <Compile Include="Modules\BatchedRenderer.cs" />
     <Compile Include="Modules\Config.cs" />
+    <Compile Include="Modules\DetailedLogger.cs" />
     <Compile Include="Modules\ESPPool.cs" />
     <Compile Include="Modules\ESPRenderer.cs" />
     <Compile Include="Modules\EntityManager.cs" />

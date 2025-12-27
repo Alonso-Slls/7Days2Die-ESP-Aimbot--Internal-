@@ -130,7 +130,62 @@ This is a comprehensive C# mod for 7 Days to Die featuring advanced ESP, aimbot,
 - **Max Render Distance**: Maximum ESP distance (default: 500m)
 - **Debug Overlay**: Performance monitoring display
 
-## Troubleshooting
+## Logging and Debugging
+
+### Comprehensive Logging System
+
+The mod includes a detailed logging system to help with debugging and troubleshooting injection issues.
+
+#### Log Files Generated
+
+1. **`mod_detailed.log`** - Comprehensive logging file
+   - Location: Game directory (next to 7DaysToDie.exe)
+   - Contains: Initialization, component loading, runtime events, errors
+   - Format: `[timestamp] [level] [thread] [context] message`
+
+2. **`injection_log.txt`** - Injection-specific information
+   - Location: Game directory
+   - Contains: Process information, injection timestamp, system specs
+   - Useful for: Debugging injection failures
+
+3. **`mod_errors.log`** - Error-specific logging
+   - Location: Game directory
+   - Contains: Errors, warnings, and critical events only
+   - Useful for: Quick error diagnosis
+
+#### Log Levels
+
+- **DEBUG**: Detailed method tracing and internal operations
+- **INFO**: General information and component initialization
+- **WARNING**: Non-critical issues that should be noted
+- **ERROR**: Errors that may affect functionality
+- **CRITICAL**: Serious errors that may cause crashes
+
+#### Using the Logs
+
+**For Injection Issues:**
+1. Check `injection_log.txt` for injection details
+2. Review `mod_detailed.log` for initialization sequence
+3. Look for CRITICAL or ERROR level entries
+
+**For Runtime Issues:**
+1. Check `mod_errors.log` for recent errors
+2. Use `mod_detailed.log` for detailed context
+3. Look for component initialization failures
+
+**For Performance Issues:**
+1. Enable DEBUG logging for detailed performance data
+2. Monitor entity scanning and rendering performance
+3. Check for memory usage patterns
+
+#### Log Export
+
+The system can export logs to timestamped files for sharing or analysis:
+- Automatic export on critical errors
+- Manual export via DetailedLogger.ExportLogs()
+- Preserves full log history with formatting
+
+### Troubleshooting
 
 ### Common Issues
 
@@ -227,6 +282,16 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 
 ## Version History
 
+### v2.4 - Enhanced Detailed Logging System
+- **DetailedLogger**: New comprehensive logging system for injection and runtime debugging
+- **Injection Tracking**: Creates injection_log.txt with detailed injection information
+- **System Information**: Logs game version, Unity version, and system specs
+- **Component Logging**: Tracks initialization of all mod components
+- **Method Tracing**: Optional method entry/exit logging for debugging
+- **Export Functionality**: Export logs to timestamped files for analysis
+- **Thread Safety**: Thread-safe logging with proper synchronization
+- **Multiple Log Levels**: DEBUG, INFO, WARNING, ERROR, CRITICAL levels
+
 ### v2.3 - SetCursorPos Direct Aiming
 - **Direct Cursor Positioning**: Added SetCursorPos for instant, precise aiming
 - **Raw Aiming Mode**: New t_AimRaw toggle for direct cursor positioning vs mouse_event
@@ -309,6 +374,6 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 ---
 
 **Last Updated**: December 2024  
-**Version**: 2.3 - SetCursorPos Direct Aiming  
+**Version**: 2.4 - Enhanced Detailed Logging System  
 **Compatibility**: 7 Days to Die Latest Version
 
