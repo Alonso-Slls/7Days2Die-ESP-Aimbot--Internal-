@@ -227,6 +227,13 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 
 ## Version History
 
+### v2.3 - SetCursorPos Direct Aiming
+- **Direct Cursor Positioning**: Added SetCursorPos for instant, precise aiming
+- **Raw Aiming Mode**: New t_AimRaw toggle for direct cursor positioning vs mouse_event
+- **Dual Aiming Methods**: Choice between smooth mouse_event and instant SetCursorPos
+- **UI Enhancement**: Added "Raw Aiming (Direct Cursor)" toggle in aimbot menu
+- **Better Precision**: SetCursorPos provides pixel-perfect aiming when enabled
+
 ### v2.2 - Enhanced Aimbot Mouse Events
 - **Enhanced Mouse Events**: Added advanced mouse event logic from aimbot_backup
 - **Weapon-Specific Smoothing**: Different aim smoothing for bows, rifles, and other weapons
@@ -302,6 +309,6 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 ---
 
 **Last Updated**: December 2024  
-**Version**: 2.2 - Enhanced Aimbot Mouse Events  
+**Version**: 2.3 - SetCursorPos Direct Aiming  
 **Compatibility**: 7 Days to Die Latest Version
 

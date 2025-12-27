@@ -173,51 +173,59 @@ namespace Game_7D2D.Modules
 
             if (target != Vector2.zero)
             {
-                // Enhanced mouse event logic from backup
+                // Enhanced aiming with multiple methods
                 try
                 {
                     double distX = target.x - Screen.width / 2f;
                     double distY = target.y - Screen.height / 2f;
 
-                    // Apply aim smoothing if enabled
+                    // Choose aiming method based on settings
                     if (UI.t_AIM && UI.t_AAIM)
                     {
-                        // Smooth aiming based on configured smoothness
-                        float smoothFactor = UI.t_AimSmooth;
-                        
-                        // Different smoothing for different weapon types
-                        if (IsBowWeapon())
+                        // Use SetCursorPos for direct positioning (more precise)
+                        if (UI.t_AimRaw)
                         {
-                            // Less smoothing for bows (need precision)
-                            distX /= smoothFactor * 0.5f;
-                            distY /= smoothFactor * 0.5f;
-                        }
-                        else if (IsRangedWeapon())
-                        {
-                            // Standard smoothing for rifles/pistols
-                            distX /= smoothFactor;
-                            distY /= smoothFactor;
+                            // Direct cursor positioning for instant aim
+                            SetCursorPos(Screen.width / 2 + (int)distX, Screen.height / 2 + (int)distY);
                         }
                         else
                         {
-                            // More smoothing for other weapons
-                            distX /= smoothFactor * 1.5f;
-                            distY /= smoothFactor * 1.5f;
+                            // Smooth aiming with mouse_event
+                            float smoothFactor = UI.t_AimSmooth;
+                            
+                            // Different smoothing for different weapon types
+                            if (IsBowWeapon())
+                            {
+                                // Less smoothing for bows (need precision)
+                                distX /= smoothFactor * 0.5f;
+                                distY /= smoothFactor * 0.5f;
+                            }
+                            else if (IsRangedWeapon())
+                            {
+                                // Standard smoothing for rifles/pistols
+                                distX /= smoothFactor;
+                                distY /= smoothFactor;
+                            }
+                            else
+                            {
+                                // More smoothing for other weapons
+                                distX /= smoothFactor * 1.5f;
+                                distY /= smoothFactor * 1.5f;
+                            }
+
+                            // Apply mouse movement with clamping to prevent excessive movement
+                            int maxMove = 100; // Maximum pixels to move per frame
+                            int moveX = (int)Math.Max(-maxMove, Math.Min(maxMove, distX));
+                            int moveY = (int)Math.Max(-maxMove, Math.Min(maxMove, distY));
+
+                            mouse_event(0x0001, moveX, moveY, 0, 0);
                         }
                     }
                     else
                     {
-                        // No smoothing - instant aim
-                        distX /= 1f;
-                        distY /= 1f;
+                        // Fallback to basic mouse_event
+                        mouse_event(0x0001, (int)distX, (int)distY, 0, 0);
                     }
-
-                    // Apply mouse movement with clamping to prevent excessive movement
-                    int maxMove = 100; // Maximum pixels to move per frame
-                    int moveX = (int)Math.Max(-maxMove, Math.Min(maxMove, distX));
-                    int moveY = (int)Math.Max(-maxMove, Math.Min(maxMove, distY));
-
-                    mouse_event(0x0001, moveX, moveY, 0, 0);
                     
                     // Update last target for tracking
                     lastAimTarget = target;
@@ -225,7 +233,7 @@ namespace Game_7D2D.Modules
                 }
                 catch (System.Exception ex)
                 {
-                    Debug.Log($"[Aimbot] Mouse event error: {ex.Message}");
+                    Debug.Log($"[Aimbot] Aiming error: {ex.Message}");
                     hasTarget = false;
                 }
             }

@@ -37,6 +37,7 @@ namespace Game_7D2D.Modules
         public static int t_AimFOV = Config.DEFAULT_AIM_FOV;
         public static float t_AimSmooth = Config.DEFAULT_AIM_SMOOTH;
         public static bool t_DebugOverlay = true;
+        public static bool t_AimRaw = false; // Direct cursor positioning mode
 
         // FOV-Aware ESP Settings
         public static bool t_FOVAwareESP = true;
@@ -319,6 +320,8 @@ namespace Game_7D2D.Modules
             
             GUILayout.Label($"Aim Smooth: {t_AimSmooth:F1}", labelStyle);
             t_AimSmooth = GUILayout.HorizontalSlider(t_AimSmooth, 1f, 20f);
+            
+            t_AimRaw = GUILayout.Toggle(t_AimRaw, "Raw Aiming (Direct Cursor)", toggleStyle);
             GUILayout.EndVertical();
             
             GUILayout.Space(SPACING);
