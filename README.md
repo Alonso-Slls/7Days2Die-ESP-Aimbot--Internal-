@@ -227,6 +227,14 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 
 ## Version History
 
+### v2.2 - Enhanced Aimbot Mouse Events
+- **Enhanced Mouse Events**: Added advanced mouse event logic from aimbot_backup
+- **Weapon-Specific Smoothing**: Different aim smoothing for bows, rifles, and other weapons
+- **Movement Clamping**: Added maximum movement limits to prevent excessive mouse movement
+- **Target Tracking**: Added hasTarget state and lastAimTarget tracking
+- **Helper Methods**: Added IsBowWeapon() and IsRangedWeapon() detection methods
+- **Better Error Handling**: Improved exception handling for weapon detection
+
 ### v2.1 - Instance-Based Architecture Refactor
 - **Major Refactor**: Eliminated static state from Hacks class
 - **HacksManager**: New singleton pattern with instance-based architecture
@@ -294,6 +302,6 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 ---
 
 **Last Updated**: December 2024  
-**Version**: 2.1 - Instance-Based Architecture  
+**Version**: 2.2 - Enhanced Aimbot Mouse Events  
 **Compatibility**: 7 Days to Die Latest Version
 
