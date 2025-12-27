@@ -7,6 +7,7 @@ namespace Game_7D2D
 	public class Render : MonoBehaviour
 	{
 		public static GUIStyle StringStyle { get; set; } = new GUIStyle(GUI.skin.label);
+		private static GUIContent reusableContent = new GUIContent();
 		private static Texture2D aaLineTex = null;
 		private static Material blitMaterial = null;
 		private static Material blendMaterial = null;
@@ -35,13 +36,10 @@ namespace Game_7D2D
 		}
 		public static void DrawString(Vector2 position, string label, bool centered = true)
 		{
-			var content = new GUIContent(label);
-			var size = StringStyle.CalcSize(content);
-			var upperLeft = centered ? position - size / 2f : position;
-			GUI.Label(new Rect(upperLeft, size), label);//
-			
-		}
-
+		reusableContent.text = label;
+		var size = StringStyle.CalcSize(reusableContent);
+		var upperLeft = centered ? position - size / 2f : position;
+		GUI.Label(new Rect(upperLeft, size), label);	}
 		public static Texture2D lineTex;
 		public static void DrawLine(Vector2 pointA, Vector2 pointB, Color color, float width)
 		{

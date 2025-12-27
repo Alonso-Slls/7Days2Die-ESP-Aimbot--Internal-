@@ -9,20 +9,66 @@ namespace Game_7D2D.Modules
 {
     class ESP
     {
+        private static Camera Camera;
         private static Vector3 eb_head, eb_neck, eb_spine, eb_leftshoulder, eb_leftarm, eb_leftforearm, eb_lefthand, eb_rightshoulder, eb_rightarm, eb_rightforearm;
         private static Vector3 eb_righthand, eb_hips, eb_leftupleg, eb_leftleg, eb_leftfoot, eb_rightupleg, eb_rightleg, eb_rightfoot;
+        
+        // FOV-Aware ESP Configuration
+        public static float fovThreshold = 120f; // 120 degrees FOV threshold
+        public static bool fovAwareEnabled = true; // Enable/disable FOV-aware rendering
+        
+        /// <summary>
+        /// Checks if an entity is within the player's field of view.
+        /// Uses Vector3.Angle to calculate the angle between player's forward vector and direction to target.
+        /// </summary>
+        /// <param name="targetPosition">World position of the target entity</param>
+        /// <returns>True if target is within FOV threshold, false otherwise</returns>
+        public static bool IsEntityInFOV(Vector3 targetPosition)
+        {
+            if (!fovAwareEnabled || Hacks.eLocalPlayer == null || Camera.main == null)
+                return true; // Default to visible if FOV-aware is disabled or components missing
+            
+            try
+            {
+                // Get player's forward direction
+                Vector3 playerForward = Hacks.eLocalPlayer.transform.forward;
+                
+                // Calculate direction from player to target
+                Vector3 directionToTarget = (targetPosition - Hacks.eLocalPlayer.transform.position).normalized;
+                
+                // Calculate angle between player's forward vector and direction to target
+                float angle = Vector3.Angle(playerForward, directionToTarget);
+                
+                // Return true if angle is within threshold (half of FOV threshold since we check from center)
+                return angle <= fovThreshold / 2f;
+            }
+            catch (System.Exception)
+            {
+                return true; // Default to visible on error
+            }
+        }
         public static void esp_drawBox(EntityEnemy entity, Color color)
         {
             Vector3 entity_head = entity.transform.position;
             Vector3 entity_feet = new Vector3(entity_head.x, entity_head.y + entity.height, entity_head.z);
 
-            Vector3 w2s_head = Camera.main.WorldToScreenPoint(entity_head);
-            Vector3 w2s_feet = Camera.main.WorldToScreenPoint(entity_feet);
+            if (Hacks.eLocalPlayer == null || Hacks.eLocalPlayer.transform == null) return;
+            const float maxDist = 100f;
+            float distSqr = (entity.transform.position - Hacks.eLocalPlayer.transform.position).sqrMagnitude;
+            if (distSqr > maxDist * maxDist) return;
 
-            float Distance = Vector3.Distance(entity.transform.position, Hacks.eLocalPlayer.transform.position);
-            Vector3 w2s_test = Camera.main.WorldToScreenPoint(entity.emodel.GetHeadTransform().position);
+            // FOV-Aware ESP: Check if entity is within player's field of view
+            if (!IsEntityInFOV(entity_head))
+                return; // Skip rendering if outside FOV
 
-            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= 100f)
+            Camera = Hacks.MainCamera;
+            Vector3 w2s_head = Hacks.W2S(entity_head);
+            Vector3 w2s_feet = Hacks.W2S(entity_feet);
+
+            float Distance = Mathf.Sqrt(distSqr);
+            Vector3 w2s_test = Hacks.W2S(entity.emodel.GetHeadTransform().position);
+
+            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= maxDist)
             {
                 if (UI.t_ESPBoxes)
                 {
@@ -38,53 +84,86 @@ namespace Game_7D2D.Modules
 
                 if (UI.t_EnemyBones)
                 {
-                    Transform[] entityBones = entity.GetComponentInChildren<SkinnedMeshRenderer>().bones;
-                    int canBone = 0;
-
-                    for (int j = 0; j < entityBones.Length; j++)
+                    // Only compute bones if head is on-screen (saves many W2S calls when off-screen)
+                    if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0)
                     {
-                        if (entityBones[j].name == "Head") { eb_head = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //Head
-                        if (entityBones[j].name == "Neck") { eb_neck = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //Neck
-                        if (entityBones[j].name == "Spine") { eb_spine = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //Spine
-                        if (entityBones[j].name == "LeftShoulder") { eb_leftshoulder = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //LeftShoulder
-                        if (entityBones[j].name == "LeftArm") { eb_leftarm = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //LeftArm
-                        if (entityBones[j].name == "LeftForeArm") { eb_leftforearm = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //LeftForeArm
-                        if (entityBones[j].name == "LeftHand") { eb_lefthand = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //LeftHand
-                        if (entityBones[j].name == "RightShoulder") { eb_rightshoulder = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //RightShoulder
-                        if (entityBones[j].name == "RightArm") { eb_rightarm = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //RightArm
-                        if (entityBones[j].name == "RightForeArm") { eb_rightforearm = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //RightForeArm
-                        if (entityBones[j].name == "RightHand") { eb_righthand = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //RightHand
-                        if (entityBones[j].name == "Hips") { eb_hips = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //Hips
-                        if (entityBones[j].name == "LeftUpLeg") { eb_leftupleg = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //LeftUpLeg
-                        if (entityBones[j].name == "LeftLeg") { eb_leftleg = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //LeftLeg
-                        if (entityBones[j].name == "LeftFoot") { eb_leftfoot = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //LeftFoot
-                        if (entityBones[j].name == "RightUpLeg") { eb_rightupleg = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //RightUpLeg
-                        if (entityBones[j].name == "RightLeg") { eb_rightleg = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //RightLeg
-                        if (entityBones[j].name == "RightFoot") { eb_rightfoot = Camera.main.WorldToScreenPoint(entityBones[j].transform.position); canBone++; } //RightFoot
-                    }
+                        try
+                        {
+                            var smr = entity.GetComponentInChildren<SkinnedMeshRenderer>();
+                            if (smr == null || smr.bones == null) return;
+                            
+                            Transform[] entityBones = smr.bones;
+                            int canBone = 0;
 
-                    if (canBone >= 18)
-                    {
-                        DrawESPLine(eb_head, eb_neck, Color.green);
-                        DrawESPLine(eb_neck, eb_spine, Color.green);
-                        DrawESPLine(eb_spine, eb_hips, Color.green);
+                            // Reset bone positions
+                            eb_head = eb_neck = eb_spine = Vector3.zero;
+                            eb_leftshoulder = eb_leftarm = eb_leftforearm = eb_lefthand = Vector3.zero;
+                            eb_rightshoulder = eb_rightarm = eb_rightforearm = eb_righthand = Vector3.zero;
+                            eb_hips = eb_leftupleg = eb_leftleg = eb_leftfoot = Vector3.zero;
+                            eb_rightupleg = eb_rightleg = eb_rightfoot = Vector3.zero;
 
-                        DrawESPLine(eb_hips, eb_leftupleg, Color.green);
-                        DrawESPLine(eb_leftupleg, eb_leftleg, Color.green);
-                        DrawESPLine(eb_leftleg, eb_leftfoot, Color.green);
-                        DrawESPLine(eb_hips, eb_rightupleg, Color.green);
-                        DrawESPLine(eb_rightupleg, eb_rightleg, Color.green);
-                        DrawESPLine(eb_rightleg, eb_rightfoot, Color.green);
+                            for (int j = 0; j < entityBones.Length; j++)
+                            {
+                                if (entityBones[j] == null) continue;
+                                var bonePos = entityBones[j].position;
+                                var boneName = entityBones[j].name.ToLower();
+                                
+                                // Use more flexible bone name matching
+                                if (boneName.Contains("head")) { eb_head = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("neck")) { eb_neck = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("spine") || boneName.Contains("chest")) { eb_spine = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("leftshoulder") || boneName.Contains("l_shoulder")) { eb_leftshoulder = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("leftarm") || boneName.Contains("l_arm")) { eb_leftarm = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("leftforearm") || boneName.Contains("l_forearm")) { eb_leftforearm = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("lefthand") || boneName.Contains("l_hand")) { eb_lefthand = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("rightshoulder") || boneName.Contains("r_shoulder")) { eb_rightshoulder = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("rightarm") || boneName.Contains("r_arm")) { eb_rightarm = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("rightforearm") || boneName.Contains("r_forearm")) { eb_rightforearm = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("righthand") || boneName.Contains("r_hand")) { eb_righthand = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("hips") || boneName.Contains("pelvis")) { eb_hips = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("leftupleg") || boneName.Contains("l_thigh")) { eb_leftupleg = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("leftleg") || boneName.Contains("l_leg")) { eb_leftleg = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("leftfoot") || boneName.Contains("l_foot")) { eb_leftfoot = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("rightupleg") || boneName.Contains("r_thigh")) { eb_rightupleg = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("rightleg") || boneName.Contains("r_leg")) { eb_rightleg = Hacks.W2S(bonePos); canBone++; }
+                                else if (boneName.Contains("rightfoot") || boneName.Contains("r_foot")) { eb_rightfoot = Hacks.W2S(bonePos); canBone++; }
+                            }
 
-                        DrawESPLine(eb_neck, eb_leftshoulder, Color.green);
-                        DrawESPLine(eb_leftshoulder, eb_leftarm, Color.green);
-                        DrawESPLine(eb_leftarm, eb_leftforearm, Color.green);
-                        DrawESPLine(eb_leftforearm, eb_lefthand, Color.green);
+                            // Draw skeleton with minimum required bones (more flexible threshold)
+                            if (canBone >= 8) // Reduced from 18 to 8 for better compatibility
+                            {
+                                // Spine
+                                if (eb_head != Vector3.zero && eb_neck != Vector3.zero) DrawESPLine(eb_head, eb_neck, Color.green);
+                                if (eb_neck != Vector3.zero && eb_spine != Vector3.zero) DrawESPLine(eb_neck, eb_spine, Color.green);
+                                if (eb_spine != Vector3.zero && eb_hips != Vector3.zero) DrawESPLine(eb_spine, eb_hips, Color.green);
 
-                        DrawESPLine(eb_neck, eb_rightshoulder, Color.green);
-                        DrawESPLine(eb_rightshoulder, eb_rightarm, Color.green);
-                        DrawESPLine(eb_rightarm, eb_rightforearm, Color.green);
-                        DrawESPLine(eb_rightforearm, eb_righthand, Color.green);
+                                // Left arm
+                                if (eb_neck != Vector3.zero && eb_leftshoulder != Vector3.zero) DrawESPLine(eb_neck, eb_leftshoulder, Color.green);
+                                if (eb_leftshoulder != Vector3.zero && eb_leftarm != Vector3.zero) DrawESPLine(eb_leftshoulder, eb_leftarm, Color.green);
+                                if (eb_leftarm != Vector3.zero && eb_leftforearm != Vector3.zero) DrawESPLine(eb_leftarm, eb_leftforearm, Color.green);
+                                if (eb_leftforearm != Vector3.zero && eb_lefthand != Vector3.zero) DrawESPLine(eb_leftforearm, eb_lefthand, Color.green);
+
+                                // Right arm
+                                if (eb_neck != Vector3.zero && eb_rightshoulder != Vector3.zero) DrawESPLine(eb_neck, eb_rightshoulder, Color.green);
+                                if (eb_rightshoulder != Vector3.zero && eb_rightarm != Vector3.zero) DrawESPLine(eb_rightshoulder, eb_rightarm, Color.green);
+                                if (eb_rightarm != Vector3.zero && eb_rightforearm != Vector3.zero) DrawESPLine(eb_rightarm, eb_rightforearm, Color.green);
+                                if (eb_rightforearm != Vector3.zero && eb_righthand != Vector3.zero) DrawESPLine(eb_rightforearm, eb_righthand, Color.green);
+
+                                // Left leg
+                                if (eb_hips != Vector3.zero && eb_leftupleg != Vector3.zero) DrawESPLine(eb_hips, eb_leftupleg, Color.green);
+                                if (eb_leftupleg != Vector3.zero && eb_leftleg != Vector3.zero) DrawESPLine(eb_leftupleg, eb_leftleg, Color.green);
+                                if (eb_leftleg != Vector3.zero && eb_leftfoot != Vector3.zero) DrawESPLine(eb_leftleg, eb_leftfoot, Color.green);
+
+                                // Right leg
+                                if (eb_hips != Vector3.zero && eb_rightupleg != Vector3.zero) DrawESPLine(eb_hips, eb_rightupleg, Color.green);
+                                if (eb_rightupleg != Vector3.zero && eb_rightleg != Vector3.zero) DrawESPLine(eb_rightupleg, eb_rightleg, Color.green);
+                                if (eb_rightleg != Vector3.zero && eb_rightfoot != Vector3.zero) DrawESPLine(eb_rightleg, eb_rightfoot, Color.green);
+                            }
+                        }
+                        catch (System.Exception)
+                        {
+                            // Silently handle bone ESP errors to avoid crashes
+                        }
                     }
                 }
                 
@@ -96,12 +175,22 @@ namespace Game_7D2D.Modules
             Vector3 entity_head = entity.transform.position;
             Vector3 entity_feet = new Vector3(entity_head.x, entity_head.y + entity.height, entity_head.z);
 
-            Vector3 w2s_head = Camera.main.WorldToScreenPoint(entity_head);
-            Vector3 w2s_feet = Camera.main.WorldToScreenPoint(entity_feet);
+            if (Hacks.eLocalPlayer == null || Hacks.eLocalPlayer.transform == null) return;
+            const float maxDist = 100f;
+            float distSqr = (entity.transform.position - Hacks.eLocalPlayer.transform.position).sqrMagnitude;
+            if (distSqr > maxDist * maxDist) return;
 
-            float Distance = Vector3.Distance(entity.transform.position, Hacks.eLocalPlayer.transform.position);
+            // FOV-Aware ESP: Check if item is within player's field of view
+            if (!IsEntityInFOV(entity_head))
+                return; // Skip rendering if outside FOV
 
-            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= 100f)
+            Camera = Hacks.MainCamera;
+            Vector3 w2s_head = Hacks.W2S(entity_head);
+            Vector3 w2s_feet = Hacks.W2S(entity_feet);
+
+            float Distance = Mathf.Sqrt(distSqr);
+
+            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= maxDist)
             {
                 DrawESPBox(w2s_feet, w2s_head, color, entity.name);
             }
@@ -112,12 +201,18 @@ namespace Game_7D2D.Modules
             Vector3 entity_head = entity.transform.position;
             Vector3 entity_feet = new Vector3(entity_head.x, entity_head.y + entity.height, entity_head.z);
 
-            Vector3 w2s_head = Camera.main.WorldToScreenPoint(entity_head);
-            Vector3 w2s_feet = Camera.main.WorldToScreenPoint(entity_feet);
+            if (Hacks.eLocalPlayer == null || Hacks.eLocalPlayer.transform == null) return;
+            const float maxDist = 100f;
+            float distSqr = (entity.transform.position - Hacks.eLocalPlayer.transform.position).sqrMagnitude;
+            if (distSqr > maxDist * maxDist) return;
 
-            float Distance = Vector3.Distance(entity.transform.position, Hacks.eLocalPlayer.transform.position);
+            Camera = Hacks.MainCamera;
+            Vector3 w2s_head = Hacks.W2S(entity_head);
+            Vector3 w2s_feet = Hacks.W2S(entity_feet);
 
-            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= 100f)
+            float Distance = Mathf.Sqrt(distSqr);
+
+            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= maxDist)
             {
                 DrawESPText(w2s_feet, w2s_head, color, entity.name);
             }
@@ -127,8 +222,9 @@ namespace Game_7D2D.Modules
             Vector3 entity_head = entity.transform.position;
             Vector3 entity_feet = new Vector3(entity_head.x, entity_head.y + entity.height, entity_head.z);
 
-            Vector3 w2s_head = Camera.main.WorldToScreenPoint(entity_head);
-            Vector3 w2s_feet = Camera.main.WorldToScreenPoint(entity_feet);
+            Camera = Hacks.MainCamera;
+            Vector3 w2s_head = Hacks.W2S(entity_head);
+            Vector3 w2s_feet = Hacks.W2S(entity_feet);
 
             float Distance = Vector3.Distance(entity.transform.position, Hacks.eLocalPlayer.transform.position);
 
@@ -150,9 +246,21 @@ namespace Game_7D2D.Modules
             Vector3 entity_head = entity.transform.position;
             Vector3 entity_feet = new Vector3(entity_head.x, entity_head.y + entity.height, entity_head.z);
 
-            Vector3 w2s_head = Camera.main.WorldToScreenPoint(entity_head);
-            Vector3 w2s_feet = Camera.main.WorldToScreenPoint(entity_feet);
-            Vector3 w2s_test = Camera.main.WorldToScreenPoint(entity.emodel.GetHeadTransform().position);
+            if (Hacks.eLocalPlayer == null || Hacks.eLocalPlayer.transform == null) return;
+            const float maxDist = 100f;
+            float distSqr = (entity.transform.position - Hacks.eLocalPlayer.transform.position).sqrMagnitude;
+            if (distSqr > maxDist * maxDist) return;
+
+            // FOV-Aware ESP: Check if player is within player's field of view
+            if (!IsEntityInFOV(entity_head))
+                return; // Skip rendering if outside FOV
+
+            Camera = Hacks.MainCamera;
+            Vector3 w2s_head = Hacks.W2S(entity_head);
+            Vector3 w2s_feet = Hacks.W2S(entity_feet);
+            Vector3 w2s_test = Hacks.W2S(entity.emodel.GetHeadTransform().position);
+
+            float Distance = Mathf.Sqrt(distSqr);
 
             if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0)
             {
@@ -188,13 +296,23 @@ namespace Game_7D2D.Modules
             Vector3 entity_head = entity.transform.position;
             Vector3 entity_feet = new Vector3(entity_head.x, entity_head.y + entity.height, entity_head.z);
 
-            Vector3 w2s_head = Camera.main.WorldToScreenPoint(entity_head);
-            Vector3 w2s_feet = Camera.main.WorldToScreenPoint(entity_feet);
-            Vector3 w2s_test = Camera.main.WorldToScreenPoint(entity.emodel.GetHeadTransform().position);
+            if (Hacks.eLocalPlayer == null || Hacks.eLocalPlayer.transform == null) return;
+            const float maxDist = 100f;
+            float distSqr = (entity.transform.position - Hacks.eLocalPlayer.transform.position).sqrMagnitude;
+            if (distSqr > maxDist * maxDist) return;
 
-            float Distance = Vector3.Distance(entity.transform.position, Hacks.eLocalPlayer.transform.position);
+            // FOV-Aware ESP: Check if animal is within player's field of view
+            if (!IsEntityInFOV(entity_head))
+                return; // Skip rendering if outside FOV
 
-            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= 100f)
+            Camera = Hacks.MainCamera;
+            Vector3 w2s_head = Hacks.W2S(entity_head);
+            Vector3 w2s_feet = Hacks.W2S(entity_feet);
+            Vector3 w2s_test = Hacks.W2S(entity.emodel.GetHeadTransform().position);
+
+            float Distance = Mathf.Sqrt(distSqr);
+
+            if (w2s_head.z > 0f && w2s_head.x > 0 && w2s_head.x < (float)Screen.width && w2s_head.y > 0 && Distance <= maxDist)
             {
                 if (UI.t_ESPBoxes)
                 {
@@ -209,35 +327,95 @@ namespace Game_7D2D.Modules
         }
 
 
+        /// <summary>
+        /// Draw an ESP line using object pooling for performance.
+        /// </summary>
+        private static void DrawESPLine(Vector3 start, Vector3 end, Color color)
+        {
+            var lineData = ESPPool.GetLine();
+            lineData.Set(
+                new Vector2(start.x, Screen.height - start.y),
+                new Vector2(end.x, Screen.height - end.y),
+                color,
+                1f
+            );
+            
+            // Render the line using the pooled data
+            Render.DrawLine(lineData.start, lineData.end, lineData.color, lineData.thickness);
+            
+            // Return to pool for reuse
+            ESPPool.ReturnLine(lineData);
+            ESPPool.IncrementLineCount();
+        }
+        
+        /// <summary>
+        /// Draw an ESP box using object pooling for performance.
+        /// </summary>
         private static void DrawESPBox(Vector3 objfootPos, Vector3 objheadPos, Color objColor, String name)
         {
+            var boxData = ESPPool.GetBox();
+            
             //Draw Basic ESP Method from Vector3 W2S input
             float height = objheadPos.y - objfootPos.y;
             float widthOffset = 2f;
             float width = height / widthOffset;
 
-            Render.DrawBox(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height, width, height, objColor, 2f);
-            if (name != "")
-            {
-                Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height), $"{name}");
-            }
-        }
+            boxData.Set(
+                objfootPos.x - (width / 2),
+                (float)Screen.height - objfootPos.y - height,
+                width,
+                height,
+                objColor,
+                2f,
+                name
+            );
 
+            // Render the box using the pooled data
+            Render.DrawBox(boxData.x, boxData.y, boxData.width, boxData.height, boxData.color, boxData.thickness);
+            
+            if (!string.IsNullOrEmpty(boxData.text))
+            {
+                var textData = ESPPool.GetText();
+                textData.Set(
+                    new Vector2(boxData.x, boxData.y),
+                    boxData.text,
+                    Color.white
+                );
+                Render.DrawString(textData.position, textData.text);
+                ESPPool.ReturnText(textData);
+                ESPPool.IncrementTextCount();
+            }
+            
+            // Return to pool for reuse
+            ESPPool.ReturnBox(boxData);
+            ESPPool.IncrementBoxCount();
+        }
+        
+        /// <summary>
+        /// Draw ESP text using object pooling for performance.
+        /// </summary>
         private static void DrawESPText(Vector3 objfootPos, Vector3 objheadPos, Color objColor, String name)
         {
-            //Draw Basic ESP Method from Vector3 W2S input
-            float height = objheadPos.y - objfootPos.y;
-            float widthOffset = 2f;
-            float width = height / widthOffset;
-
-            Render.DrawString(new Vector2(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y), $"{name}");
-            //GUI.Label(new Rect(objfootPos.x - (width / 2), (float)Screen.height - objfootPos.y - height, width, height), name);
+            var textData = ESPPool.GetText();
+            textData.Set(
+                new Vector2(objfootPos.x, (float)Screen.height - objfootPos.y),
+                name,
+                objColor
+            );
+            
+            Render.DrawString(textData.position, textData.text);
+            
+            ESPPool.ReturnText(textData);
+            ESPPool.IncrementTextCount();
         }
-        private static void DrawESPLine(Vector3 pointA, Vector3 pointB, Color objColor)
+
+        /// <summary>
+        /// Reset performance counters at the start of each frame.
+        /// </summary>
+        public static void ResetFrameCounters()
         {
-            Render.DrawLine(new Vector2(pointA.x, (float)Screen.height - pointA.y), new Vector2(pointB.x, (float)Screen.height - pointB.y), objColor, 1f);
+            ESPPool.ResetFrameCounters();
         }
 
-        
     }
 }

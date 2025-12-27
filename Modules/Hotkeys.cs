@@ -20,6 +20,7 @@ namespace Game_7D2D.Modules
             {
                 Hacks.Menu = !Hacks.Menu;
             }
+            // Run aimbot if AAIM is active and the player is holding Right-Click (legacy behavior)
             if (Input.GetKey(KeyCode.Mouse1) && UI.t_AAIM)
             {
                 Aimbot.AimAssist();
