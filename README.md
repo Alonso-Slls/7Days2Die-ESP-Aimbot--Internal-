@@ -139,17 +139,17 @@ The mod includes a detailed logging system to help with debugging and troublesho
 #### Log Files Generated
 
 1. **`mod_detailed.log`** - Comprehensive logging file
-   - Location: Game directory (next to 7DaysToDie.exe)
+   - Location: `C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs\`
    - Contains: Initialization, component loading, runtime events, errors
    - Format: `[timestamp] [level] [thread] [context] message`
 
 2. **`injection_log.txt`** - Injection-specific information
-   - Location: Game directory
+   - Location: `C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs\`
    - Contains: Process information, injection timestamp, system specs
    - Useful for: Debugging injection failures
 
 3. **`mod_errors.log`** - Error-specific logging
-   - Location: Game directory
+   - Location: `C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs\`
    - Contains: Errors, warnings, and critical events only
    - Useful for: Quick error diagnosis
 
@@ -184,6 +184,7 @@ The system can export logs to timestamped files for sharing or analysis:
 - Automatic export on critical errors
 - Manual export via DetailedLogger.ExportLogs()
 - Preserves full log history with formatting
+- Location: `C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs\`
 
 ### Troubleshooting
 
@@ -282,8 +283,13 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 
 ## Version History
 
+### v2.5 - Custom Log Directory
+- **Custom Log Path**: Logs now saved to `C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs\`
+- **Centralized Logging**: All log files in injector directory for easy access
+- **Updated Documentation**: README reflects new log locations
+
 ### v2.4 - Enhanced Detailed Logging System
-- **DetailedLogger**: New comprehensive logging system for injection and runtime debugging
+- **DetailedLogger**: Comprehensive logging system for injection and runtime debugging
 - **Injection Tracking**: Creates injection_log.txt with detailed injection information
 - **System Information**: Logs game version, Unity version, and system specs
 - **Component Logging**: Tracks initialization of all mod components
@@ -374,6 +380,6 @@ if (angle <= fovThreshold / 2f) RenderEntity();
 ---
 
 **Last Updated**: December 2024  
-**Version**: 2.4 - Enhanced Detailed Logging System  
+**Version**: 2.5 - Custom Log Directory  
 **Compatibility**: 7 Days to Die Latest Version
 

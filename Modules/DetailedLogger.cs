@@ -12,8 +12,8 @@ namespace Game_7D2D.Modules
     /// </summary>
     public static class DetailedLogger
     {
-        private static string LogPath => Path.Combine(Application.dataPath, "..", "mod_detailed.log");
-        private static string InjectionLogPath => Path.Combine(Application.dataPath, "..", "injection_log.txt");
+        private static string LogPath => Path.Combine(@"C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs", "mod_detailed.log");
+        private static string InjectionLogPath => Path.Combine(@"C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs", "injection_log.txt");
         private static List<LogEntry> _allLogs = new List<LogEntry>();
         private static readonly object _lockObject = new object();
         
@@ -222,7 +222,7 @@ namespace Game_7D2D.Modules
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                filePath = Path.Combine(Application.dataPath, "..", $"mod_export_{DateTime.Now:yyyyMMdd_HHmmss}.log");
+                filePath = Path.Combine(@"C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs", $"mod_export_{DateTime.Now:yyyyMMdd_HHmmss}.log");
             }
             
             lock (_lockObject)

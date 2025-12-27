@@ -12,7 +12,7 @@ namespace Game_7D2D.Modules
     /// </summary>
     public static class ErrorHandler
     {
-        private static string LogPath => Path.Combine(Application.dataPath, "..", "mod_errors.log");
+        private static string LogPath => Path.Combine(@"C:\Users\anoni\OneDrive\Escritorio\SharpMonoInjector.Console\logs", "mod_errors.log");
         private static Queue<LogEntry> _logQueue = new Queue<LogEntry>();
         private static readonly object _lockObject = new object();
         
