@@ -68,6 +68,13 @@ namespace Game_7D2D
             EntitySubscription.Initialize();
             BatchedRenderer.Initialize();
             
+            // Initialize entity trackers
+            EntityTracker<EntityEnemy>.Instance.ScanInterval = Config.ENEMY_SCAN_INTERVAL;
+            EntityTracker<EntityAnimal>.Instance.ScanInterval = Config.ANIMAL_SCAN_INTERVAL;
+            EntityTracker<EntityPlayer>.Instance.ScanInterval = Config.ENTITY_SCAN_INTERVAL;
+            EntityTracker<EntityItem>.Instance.ScanInterval = Config.ENTITY_SCAN_INTERVAL;
+            EntityTracker<EntityNPC>.Instance.ScanInterval = Config.ENTITY_SCAN_INTERVAL;
+            
             // Create EntityManager component
             if (EntityManager.Instance == null)
             {
@@ -109,12 +116,29 @@ namespace Game_7D2D
                                        Config.Settings.ItemESP || Config.Settings.AnimalESP || 
                                        Config.Settings.NPCESP || Config.Settings.AimbotEnabled;
                 
+                // Update entity trackers
+                if (espFeaturesActive)
+                {
+                    EntityTracker<EntityEnemy>.Instance.Update();
+                    EntityTracker<EntityAnimal>.Instance.Update();
+                    EntityTracker<EntityPlayer>.Instance.Update();
+                    EntityTracker<EntityItem>.Instance.Update();
+                    EntityTracker<EntityNPC>.Instance.Update();
+                }
+                
                 // Use subscription model instead of periodic scans
                 if (Timer >= Config.ENTITY_SCAN_INTERVAL && espFeaturesActive)
                 {
                     Timer = 0f;
                     // Cleanup invalid entities periodically
                     EntitySubscription.CleanupInvalidEntities();
+                    
+                    // Cleanup entity trackers
+                    EntityTracker<EntityEnemy>.Instance.CleanupInvalidEntities();
+                    EntityTracker<EntityAnimal>.Instance.CleanupInvalidEntities();
+                    EntityTracker<EntityPlayer>.Instance.CleanupInvalidEntities();
+                    EntityTracker<EntityItem>.Instance.CleanupInvalidEntities();
+                    EntityTracker<EntityNPC>.Instance.CleanupInvalidEntities();
                     
                     // Rescan for any missed entities (fallback)
                     if (UnityEngine.Random.Range(0, 10) == 0) // 10% chance per interval
@@ -226,11 +250,12 @@ namespace Game_7D2D
             // Draw persistent debug overlay when enabled (shows auto-checks, weapon speed, last exception)
             try
             {
-                if (Modules.UI.t_DebugOverlay && Hacks.isLoaded)
+                if (Config.Settings.DebugOverlay && Hacks.isLoaded)
                 {
                     float bx = Screen.width - 260f;
                     float by = 5f;
-                    GUI.Box(new Rect(bx, by, 250f, 70f), "");
+                    BatchedRenderer.AddBox(bx, by, 250f, 70f, Color.white, 1f);
+                    
                     string dbg = Modules.UI.dbg ?? "";
                     string winfo = "N/A";
                     float wspeed = 0f;
@@ -240,93 +265,31 @@ namespace Game_7D2D
                         int idx = ex.IndexOf('\n');
                         if (idx >= 0) ex = ex.Substring(0, idx);
                     }
-                    GUI.Label(new Rect(bx + 8f, by + 6f, 234f, 18f), $"DBG: {dbg}");
-                    GUI.Label(new Rect(bx + 8f, by + 24f, 234f, 18f), $"Weapon: {winfo} speed:{wspeed:0.0}");
-                    GUI.Label(new Rect(bx + 8f, by + 42f, 234f, 18f), $"LastErr: {ex}");
-                }
-            }
-            catch { }
-
-
-            if (Modules.UI.t_AAIM && Modules.UI.t_TFOV)
-            {
-                Render.DrawCircle(new Vector2((float)Screen.width / 2, (float)Screen.height / 2), 150, Color.green, 1f, false, 150);
-            }
-
-            if (Modules.UI.t_EnemyESP)
-            {
-                foreach (EntityEnemy Enemy in eEnemy)
-                {
-                    if (Enemy != null)
-                    {
-                        if (Enemy.IsAlive())
-                        {
-                            Modules.ESP.esp_drawBox(Enemy, Color.red);
-                        }
-                    }
                     
+                    BatchedRenderer.AddText(new Vector2(bx + 8f, by + 6f), $"DBG: {dbg}", Color.white);
+                    BatchedRenderer.AddText(new Vector2(bx + 8f, by + 24f), $"Weapon: {winfo} speed:{wspeed:0.0}", Color.white);
+                    BatchedRenderer.AddText(new Vector2(bx + 8f, by + 42f), $"LastErr: {ex}", Color.white);
                 }
             }
-            if (Modules.UI.t_ItemESP)
+            catch (Exception ex)
             {
-                foreach (EntityItem Item in eItem)
-                {
-                    if (Item != null)
-                    {
-                        Modules.ESP.esp_drawBox(Item, Color.white);
-                    }
-                }
-                foreach (EntitySupplyCrate Item in eLoot)
-                {
-                    if (Item != null)
-                    {
-                        Modules.ESP.esp_drawBox(Item, Color.magenta);
-                    }
-                }
-            }
-            if (Modules.UI.t_NPCESP)
-            {
-                foreach (EntityNPC NPC in eNPC)
-                {
-                    if (NPC != null)
-                    {
-                        if (NPC.IsAlive() && NPC.IsSpawned())
-                        {
-                            Modules.ESP.esp_drawBox(NPC, Color.magenta);
-                        }
-                    }
-                }
-            }
-            if (Modules.UI.t_PlayerESP)
-            {
-                foreach (EntityPlayer Player in ePlayers)
-                {
-                    if (Player != null)
-                    {
-                        if (Player.IsAlive() && Player.IsSpawned())
-                        {
-                            Modules.ESP.esp_drawBox(Player, Color.cyan);
-                        }
-                    }
-                }
-            }
-            if (Modules.UI.t_AnimalESP)
-            {
-                foreach (EntityAnimal Animal in eAnimal)
-                {
-                    if (Animal != null)
-                    {
-                        if (Animal.IsAlive() && Animal.IsSpawned())
-                        {
-                            Modules.ESP.esp_drawBox(Animal, Color.yellow);
-                        }
-                    }
-                }
+                ErrorHandler.LogError("Hacks.OnGUI", $"Debug overlay error: {ex.Message}");
             }
 
-            
+            // Draw FOV circle using batched rendering
+            if (Config.Settings.AimbotEnabled && Config.Settings.ShowFOVCircle)
+            {
+                Vector2 center = new Vector2((float)Screen.width / 2, (float)Screen.height / 2);
+                BatchedRenderer.AddCircle(center, Config.Settings.AimFOV, Color.green, 64);
+            }
 
+            // Render ESP using the dedicated ESP renderer
+            ESPRenderer.Instance.RenderAllESP();
+
+            // Execute all batched render operations
+            BatchedRenderer.RenderBatches();
         }
+
         private void checkState()
         {
             if (isLoaded != GameManager.Instance.gameStateManager.IsGameStarted())
